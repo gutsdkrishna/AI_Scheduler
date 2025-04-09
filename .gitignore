@@ -1,0 +1,75 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Built application files
+*.apk
+*.ap_
+
+# IDE settings
+.idea/
+*.iml
+
+# Gradle files
+.gradle/
+build/
+**/build/
+
+# Local configuration
+local.properties
+config.properties
+
+# Log files
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Keystore files (if you generate locally)
+*.jks
+
+# Miscellaneous
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Node modules if you're using JS (optional)
+node_modules/
+
+# Jetpack Compose previews cache (if using Compose)
+.ui/
+
+# Generated icon files (optional if you re-generate them)
+app/src/main/res/mipmap*/ic_launcher*.png
+
+# Kotlin specific
+*.kotlin_module
+
+# Ignore backup or crash reports
+*.hprof
+
+# NDK
+obj/
+
+# Bytecode
+*.class
+
+# Android Studio
+.android/
+.idea/
+*.iml
+*.ipr
+*.iws
