@@ -3,12 +3,23 @@
 A modern Android application built with the latest technologies and best practices.
 
 
+
 ##Some Screenshots
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/504aad99-f068-4b07-9dcf-88abda28d102" alt="Screenshot 1" width="45%" />
-  <img src="https://github.com/user-attachments/assets/f6b4525e-5b20-4cd3-a14d-b24ae5edbcec" alt="Screenshot 2" width="45%" />
+   <img src="https://github.com/user-attachments/assets/9db6d775-8b9a-44dc-a997-4f541f91abfc" alt="Screenshot 2" width="30%" />
+   <img src="https://github.com/user-attachments/assets/454eb89d-5478-4e66-aaff-9acff09f80d5" alt="Screenshot 2" width="30%" />
+   <img src="https://github.com/user-attachments/assets/bf57ac14-04f5-45bd-b5bb-fb6e264a566e" alt="Screenshot 1" width="30%" />
 </p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a829bafd-cf67-4314-9b5c-0b3614d7fe15" alt="Screenshot 2" width="30%" />
+  
+  <img src="https://github.com/user-attachments/assets/6f0b0616-20be-46ca-a464-5e3f36cf8ca2" alt="Screenshot 2" width="30%" />
+  <img src="https://github.com/user-attachments/assets/b37a14f4-3f33-4c0a-b025-f0267dfd7ff8" alt="Screenshot 1" width="30%" />
+  
+</p>
+
+
 
 ## Technologies Used
 
