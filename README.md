@@ -2,6 +2,14 @@
 
 A modern Android application built with the latest technologies and best practices.
 
+
+##Some Screenshots
+
+<p align="center">
+  <img url="https://github.com/user-attachments/assets/504aad99-f068-4b07-9dcf-88abda28d102" alt="Screenshot 1" width="45%" />
+  <img url="[path/to/image2.png](https://github.com/user-attachments/assets/f6b4525e-5b20-4cd3-a14d-b24ae5edbcec)" alt="Screenshot 2" width="45%" />
+</p>
+
 ## Technologies Used
 
 ### Core Technologies
