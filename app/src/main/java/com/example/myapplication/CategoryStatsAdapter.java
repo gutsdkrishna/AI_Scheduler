@@ -3,19 +3,17 @@ package com.example.myapplication;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.google.android.material.card.MaterialCardView;
 import java.util.List;
 
 public class CategoryStatsAdapter extends RecyclerView.Adapter<CategoryStatsAdapter.ViewHolder> {
-    private final List<StatisticsActivity.CategoryStat> categoryStats;
+    private final List<CategoryStat> categoryStats;
 
-    public CategoryStatsAdapter(List<StatisticsActivity.CategoryStat> categoryStats) {
+    public CategoryStatsAdapter(List<CategoryStat> categoryStats) {
         this.categoryStats = categoryStats;
     }
 
@@ -29,17 +27,8 @@ public class CategoryStatsAdapter extends RecyclerView.Adapter<CategoryStatsAdap
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        StatisticsActivity.CategoryStat stat = categoryStats.get(position);
-        
-        holder.tvCategoryName.setText(stat.category.getDisplayName());
-        holder.tvTaskCount.setText(String.format("%d tasks", stat.count));
-        holder.tvPercentage.setText(String.format("%.1f%%", stat.percentage));
-        holder.progressBar.setProgress((int) stat.percentage);
-        
-        // Set category color
-        int color = ContextCompat.getColor(holder.itemView.getContext(), 
-            stat.category.getColorResId());
-        holder.progressBar.setProgressTintList(android.content.res.ColorStateList.valueOf(color));
+        CategoryStat stat = categoryStats.get(position);
+        holder.bind(stat);
     }
 
     @Override
@@ -48,17 +37,25 @@ public class CategoryStatsAdapter extends RecyclerView.Adapter<CategoryStatsAdap
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvCategoryName;
-        TextView tvTaskCount;
-        TextView tvPercentage;
-        ProgressBar progressBar;
+        private final MaterialCardView cardView;
+        private final TextView textCategory;
+        private final TextView textCount;
 
-        ViewHolder(View view) {
-            super(view);
-            tvCategoryName = view.findViewById(R.id.tvCategoryName);
-            tvTaskCount = view.findViewById(R.id.tvTaskCount);
-            tvPercentage = view.findViewById(R.id.tvPercentage);
-            progressBar = view.findViewById(R.id.progressBar);
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            cardView = (MaterialCardView) itemView;
+            textCategory = itemView.findViewById(R.id.textCategory);
+            textCount = itemView.findViewById(R.id.textCount);
+        }
+
+        public void bind(CategoryStat stat) {
+            textCategory.setText(stat.getCategory().getDisplayName());
+            textCount.setText(stat.getCount() + " tasks");
+            
+            // Set card stroke color based on category
+            int color = ContextCompat.getColor(itemView.getContext(), stat.getCategory().getColorResId());
+            cardView.setStrokeColor(color);
+            cardView.setStrokeWidth(2);
         }
     }
 } 

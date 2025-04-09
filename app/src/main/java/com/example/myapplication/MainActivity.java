@@ -18,11 +18,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -51,6 +54,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import android.widget.ArrayAdapter;
 
 public class MainActivity extends AppCompatActivity {
     private static final int SPEECH_REQUEST_CODE = 123;
@@ -104,9 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Setup RecyclerView
         taskList = new ArrayList<>();
-        taskAdapter = new TaskAdapter(taskList, this);
-        recyclerViewTasks.setLayoutManager(new LinearLayoutManager(this));
-        recyclerViewTasks.setAdapter(taskAdapter);
+        setupRecyclerView();
 
         // Load saved tasks
         loadSavedTasks();
@@ -637,6 +640,133 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private void showAddTaskDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_task, null);
+        builder.setView(dialogView);
+
+        EditText editTextTask = dialogView.findViewById(R.id.editTextTask);
+        EditText editTextTime = dialogView.findViewById(R.id.editTextTime);
+        Spinner spinnerCategory = dialogView.findViewById(R.id.spinnerCategory);
+        RadioGroup radioGroupPriority = dialogView.findViewById(R.id.radioGroupPriority);
+
+        // Set up category spinner
+        ArrayAdapter<Category> categoryAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, Category.values());
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCategory.setAdapter(categoryAdapter);
+
+        builder.setTitle("Add Task")
+                .setPositiveButton("Add", (dialog, which) -> {
+                    String task = editTextTask.getText().toString();
+                    String time = editTextTime.getText().toString();
+                    Category category = (Category) spinnerCategory.getSelectedItem();
+                    
+                    // Get selected priority
+                    TaskItem.Priority priority = TaskItem.Priority.MEDIUM; // Default
+                    int selectedPriorityId = radioGroupPriority.getCheckedRadioButtonId();
+                    if (selectedPriorityId == R.id.radioLow) {
+                        priority = TaskItem.Priority.LOW;
+                    } else if (selectedPriorityId == R.id.radioHigh) {
+                        priority = TaskItem.Priority.HIGH;
+                    }
+
+                    if (!task.isEmpty() && !time.isEmpty()) {
+                        TaskItem newTask = new TaskItem(task, time, category, TaskItem.RecurrenceType.NONE, priority);
+                        taskList.add(newTask);
+                        taskAdapter.notifyDataSetChanged();
+                        saveTasks();
+                    }
+                })
+                .setNegativeButton("Cancel", null);
+
+        builder.create().show();
+    }
+
+    private void setupRecyclerView() {
+        taskAdapter = new TaskAdapter(this, taskList);
+        recyclerViewTasks.setAdapter(taskAdapter);
+        recyclerViewTasks.setLayoutManager(new LinearLayoutManager(this));
+
+        // Add click listener for task items
+        taskAdapter.setOnItemClickListener(position -> {
+            TaskItem task = taskList.get(position);
+            showEditTaskDialog(task, position);
+        });
+    }
+
+    private void showEditTaskDialog(TaskItem task, int position) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_task, null);
+        builder.setView(dialogView);
+
+        EditText editTextTask = dialogView.findViewById(R.id.editTextTask);
+        EditText editTextTime = dialogView.findViewById(R.id.editTextTime);
+        Spinner spinnerCategory = dialogView.findViewById(R.id.spinnerCategory);
+        RadioGroup radioGroupPriority = dialogView.findViewById(R.id.radioGroupPriority);
+
+        // Set up category spinner
+        ArrayAdapter<Category> categoryAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, Category.values());
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCategory.setAdapter(categoryAdapter);
+
+        // Set current values
+        editTextTask.setText(task.getTask());
+        editTextTime.setText(task.getTime());
+        spinnerCategory.setSelection(task.getCategory().ordinal());
+        
+        // Set priority
+        switch (task.getPriority()) {
+            case LOW:
+                radioGroupPriority.check(R.id.radioLow);
+                break;
+            case HIGH:
+                radioGroupPriority.check(R.id.radioHigh);
+                break;
+            default:
+                radioGroupPriority.check(R.id.radioMedium);
+                break;
+        }
+
+        builder.setTitle("Edit Task")
+                .setPositiveButton("Save", (dialog, which) -> {
+                    String newTask = editTextTask.getText().toString();
+                    String newTime = editTextTime.getText().toString();
+                    Category newCategory = (Category) spinnerCategory.getSelectedItem();
+                    
+                    // Get selected priority
+                    TaskItem.Priority newPriority = TaskItem.Priority.MEDIUM; // Default
+                    int selectedPriorityId = radioGroupPriority.getCheckedRadioButtonId();
+                    if (selectedPriorityId == R.id.radioLow) {
+                        newPriority = TaskItem.Priority.LOW;
+                    } else if (selectedPriorityId == R.id.radioHigh) {
+                        newPriority = TaskItem.Priority.HIGH;
+                    }
+
+                    if (!newTask.isEmpty() && !newTime.isEmpty()) {
+                        // Create a new task with updated values
+                        TaskItem updatedTask = new TaskItem(newTask, newTime, newCategory, 
+                                task.getRecurrenceType(), newPriority);
+                        updatedTask.setCompleted(task.isCompleted());
+                        updatedTask.setRecurrenceId(task.getRecurrenceId());
+                        
+                        // Replace the old task with the updated one
+                        taskList.set(position, updatedTask);
+                        taskAdapter.notifyItemChanged(position);
+                        saveTasks();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .setNeutralButton("Delete", (dialog, which) -> {
+                    taskList.remove(position);
+                    taskAdapter.notifyItemRemoved(position);
+                    saveTasks();
+                });
+
+        builder.create().show();
+    }
 }
 
 // TaskAdapter for RecyclerView
@@ -645,8 +775,17 @@ class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
     private List<TaskItem> filteredList;
     private MainActivity mainActivity;
     private Category currentFilter = Category.ALL;
+    private OnItemClickListener listener;
 
-    public TaskAdapter(List<TaskItem> taskList, MainActivity mainActivity) {
+    public interface OnItemClickListener {
+        void onItemClick(int position);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
+
+    public TaskAdapter(MainActivity mainActivity, List<TaskItem> taskList) {
         this.taskList = taskList;
         this.filteredList = new ArrayList<>(taskList);
         this.mainActivity = mainActivity;
@@ -719,6 +858,14 @@ class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
             textTime = itemView.findViewById(R.id.textTime);
             btnDelete = itemView.findViewById(R.id.btnDelete);
             checkBoxComplete = itemView.findViewById(R.id.checkBoxComplete);
+            
+            // Set click listener for the entire item
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && adapter.listener != null) {
+                    adapter.listener.onItemClick(position);
+                }
+            });
         }
 
         void bind(TaskItem task) {

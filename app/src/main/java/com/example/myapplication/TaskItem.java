@@ -11,12 +11,35 @@ public class TaskItem {
     private Date completedAt;
     private RecurrenceType recurrenceType;
     private int recurrenceId; // Used to identify recurring reminders
+    private Priority priority; // New field for task priority
 
     public enum RecurrenceType {
         NONE,
         DAILY,
         WEEKLY,
         MONTHLY
+    }
+
+    public enum Priority {
+        LOW("Low", R.color.priority_low),
+        MEDIUM("Medium", R.color.priority_medium),
+        HIGH("High", R.color.priority_high);
+
+        private final String displayName;
+        private final int colorResId;
+
+        Priority(String displayName, int colorResId) {
+            this.displayName = displayName;
+            this.colorResId = colorResId;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public int getColorResId() {
+            return colorResId;
+        }
     }
 
     public TaskItem(String task, String time) {
@@ -28,6 +51,10 @@ public class TaskItem {
     }
 
     public TaskItem(String task, String time, Category category, RecurrenceType recurrenceType) {
+        this(task, time, category, recurrenceType, Priority.MEDIUM);
+    }
+
+    public TaskItem(String task, String time, Category category, RecurrenceType recurrenceType, Priority priority) {
         this.task = task;
         this.time = time;
         this.category = category;
@@ -35,6 +62,7 @@ public class TaskItem {
         this.createdAt = new Date();
         this.recurrenceType = recurrenceType;
         this.recurrenceId = 0;
+        this.priority = priority;
     }
 
     public String getTask() {
@@ -88,5 +116,13 @@ public class TaskItem {
 
     public void setRecurrenceId(int recurrenceId) {
         this.recurrenceId = recurrenceId;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
     }
 } 

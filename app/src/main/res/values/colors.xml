@@ -25,6 +25,11 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
+    <!-- Priority Colors -->
+    <color name="priority_low">#4CAF50</color>      <!-- Green -->
+    <color name="priority_medium">#FFC107</color>   <!-- Amber -->
+    <color name="priority_high">#F44336</color>     <!-- Red -->
+    
     <!-- Category Colors -->
     <color name="category_all">#FF6200EE</color>
     <color name="category_health">#FF4CAF50</color>
