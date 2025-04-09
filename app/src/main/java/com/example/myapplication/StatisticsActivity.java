@@ -4,7 +4,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -31,7 +36,10 @@ public class StatisticsActivity extends AppCompatActivity {
     private TextView tvCompletionRate;
     private TextView tvMostActiveCategory;
     private TextView tvMostActiveTime;
+    private TextView tvAverageTasksPerDay;
+    private TextView tvMostProductiveDay;
     private RecyclerView rvCategoryStats;
+    private LinearLayout weeklyChart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +51,10 @@ public class StatisticsActivity extends AppCompatActivity {
         tvCompletionRate = findViewById(R.id.tvCompletionRate);
         tvMostActiveCategory = findViewById(R.id.tvMostActiveCategory);
         tvMostActiveTime = findViewById(R.id.tvMostActiveTime);
+        tvAverageTasksPerDay = findViewById(R.id.tvAverageTasksPerDay);
+        tvMostProductiveDay = findViewById(R.id.tvMostProductiveDay);
         rvCategoryStats = findViewById(R.id.rvCategoryStats);
+        weeklyChart = findViewById(R.id.weeklyChart);
 
         // Load and analyze statistics
         loadStatistics();
@@ -57,6 +68,13 @@ public class StatisticsActivity extends AppCompatActivity {
         int completedTasks = 0;
         Map<Category, Integer> categoryCount = new HashMap<>();
         Map<Integer, Integer> hourCount = new HashMap<>();
+        Map<Integer, Integer> dayOfWeekCount = new HashMap<>();
+        Map<String, Integer> dateCount = new HashMap<>();
+
+        // Get current date for calculating daily averages
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String today = dateFormat.format(calendar.getTime());
 
         for (TaskItem task : tasks) {
             // Count completed tasks
@@ -73,6 +91,15 @@ public class StatisticsActivity extends AppCompatActivity {
                 String[] timeParts = task.getTime().split(":");
                 int hour = Integer.parseInt(timeParts[0]);
                 hourCount.put(hour, hourCount.getOrDefault(hour, 0) + 1);
+
+                // Extract day of week from task date
+                calendar.set(Calendar.HOUR_OF_DAY, hour);
+                int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+                dayOfWeekCount.put(dayOfWeek, dayOfWeekCount.getOrDefault(dayOfWeek, 0) + 1);
+
+                // Count tasks per date
+                String taskDate = dateFormat.format(calendar.getTime());
+                dateCount.put(taskDate, dateCount.getOrDefault(taskDate, 0) + 1);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -101,15 +128,87 @@ public class StatisticsActivity extends AppCompatActivity {
             }
         }
 
+        // Find most productive day
+        int mostProductiveDay = Calendar.SUNDAY;
+        int maxDayCount = 0;
+        for (Map.Entry<Integer, Integer> entry : dayOfWeekCount.entrySet()) {
+            if (entry.getValue() > maxDayCount) {
+                maxDayCount = entry.getValue();
+                mostProductiveDay = entry.getKey();
+            }
+        }
+
+        // Calculate average tasks per day
+        int totalDays = Math.max(1, dateCount.size());
+        float averageTasksPerDay = (float) totalTasks / totalDays;
+
         // Update UI
         tvTotalTasks.setText(String.format("Total Tasks: %d", totalTasks));
         tvCompletionRate.setText(String.format("Completion Rate: %.1f%%", completionRate));
         tvMostActiveCategory.setText(String.format("Most Active Category: %s", 
             mostActiveCategory.getDisplayName()));
         tvMostActiveTime.setText(String.format("Most Active Time: %02d:00", mostActiveHour));
+        tvAverageTasksPerDay.setText(String.format("Average Tasks per Day: %.1f", averageTasksPerDay));
+        tvMostProductiveDay.setText(String.format("Most Productive Day: %s", 
+            getDayName(mostProductiveDay)));
 
         // Setup category statistics RecyclerView
         setupCategoryStats(categoryCount, totalTasks);
+
+        // Setup weekly distribution chart
+        setupWeeklyChart(dayOfWeekCount);
+    }
+
+    private String getDayName(int dayOfWeek) {
+        switch (dayOfWeek) {
+            case Calendar.SUNDAY: return "Sunday";
+            case Calendar.MONDAY: return "Monday";
+            case Calendar.TUESDAY: return "Tuesday";
+            case Calendar.WEDNESDAY: return "Wednesday";
+            case Calendar.THURSDAY: return "Thursday";
+            case Calendar.FRIDAY: return "Friday";
+            case Calendar.SATURDAY: return "Saturday";
+            default: return "Unknown";
+        }
+    }
+
+    private void setupWeeklyChart(Map<Integer, Integer> dayOfWeekCount) {
+        weeklyChart.removeAllViews();
+        int maxCount = 0;
+        for (Integer count : dayOfWeekCount.values()) {
+            maxCount = Math.max(maxCount, count);
+        }
+
+        for (int i = Calendar.SUNDAY; i <= Calendar.SATURDAY; i++) {
+            int count = dayOfWeekCount.getOrDefault(i, 0);
+            
+            LinearLayout barContainer = new LinearLayout(this);
+            barContainer.setOrientation(LinearLayout.VERTICAL);
+            barContainer.setLayoutParams(new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
+            barContainer.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+            barContainer.setPadding(4, 0, 4, 0);
+
+            // Create bar
+            View bar = new View(this);
+            float percentage = maxCount > 0 ? (float) count / maxCount : 0;
+            int barHeight = (int) (160 * percentage);
+            LinearLayout.LayoutParams barParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                barHeight);
+            bar.setLayoutParams(barParams);
+            bar.setBackgroundColor(getResources().getColor(R.color.primary));
+
+            // Create day label
+            TextView dayLabel = new TextView(this);
+            dayLabel.setText(getDayName(i).substring(0, 3));
+            dayLabel.setGravity(Gravity.CENTER);
+            dayLabel.setTextSize(12);
+
+            barContainer.addView(bar);
+            barContainer.addView(dayLabel);
+            weeklyChart.addView(barContainer);
+        }
     }
 
     private void setupCategoryStats(Map<Category, Integer> categoryCount, int totalTasks) {
